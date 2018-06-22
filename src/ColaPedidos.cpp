@@ -95,13 +95,70 @@ Pedido proximoCP(ColaPedidos cp) {
   return cp->raiz->pedido;
 }
 
+Nodo* eliminar(Nodo* nodo, Pedido& pedidoEliminado, int tam){
+  if (tam == 1){
+    pedidoEliminado = nodo->pedido;
+    delete nodo;
+    return NULL;
+  } else {
+    nodo->izq = eliminar(nodo->izq, pedidoEliminado, tam/2);
+    if (impar(tam)) {
+      swapNodo(nodo->der, nodo->izq);
+    }
+    return nodo;
+  }
+}
+
+bool tieneHijoMayor(Nodo* nodo){ //prec: nodo not NULL
+
+  return (nodo->izq != NULL && masPrioridad(nodo->izq->pedido, nodo->pedido)) 
+    ||   (nodo->der != NULL && masPrioridad(nodo->der->pedido, nodo->pedido));
+}
+
+Nodo* hijoMayor(Nodo* nodo){
+  if (nodo->der != NULL && masPrioridad(nodo->der->pedido, nodo->izq->pedido)){
+    return nodo->der;
+  } else {
+    return nodo->izq;
+  }
+}
+
+void intercambiarConHijoMayor(Nodo* nodo){
+  Nodo* mayor = hijoMayor(nodo);
+  Pedido temp = mayor->pedido;
+  mayor->pedido = nodo->pedido;
+  nodo->pedido = temp;
+}
+
+void bajar(Nodo* nodo){
+  Nodo* padre = nodo;
+  while (tieneHijoMayor(padre)){
+    intercambiarConHijoMayor(padre);
+    padre = hijoMayor(padre);
+  }
+}
+
+// prec: tamCP(cp) > 0
 void desencolarCP(ColaPedidos cp) {
-	// COMPLETAR
+  Pedido pedidoEliminado;
+  cp->raiz = eliminar(cp->raiz, pedidoEliminado, cp->raiz->tam);
+  if (cp->raiz != NULL){
+    cp->raiz->tam--;
+    if (cp->raiz->tam > 0) {
+      cp->raiz->pedido = pedidoEliminado;
+      bajar(cp->raiz);
+    }
+  }
+}
+
+void destruirNodo(Nodo* nodo){
+  if (nodo != NULL){
+    destruirNodo(nodo->izq);
+    destruirNodo(nodo->der);
+  }
 }
 
 void destruirCP(ColaPedidos cp) {
-  //TODO: destruir correctamenteS
-  delete cp->raiz;
-  delete cp;
+  destruirNodo(cp->raiz);
 }
 
