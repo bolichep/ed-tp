@@ -1,5 +1,7 @@
-#include <cstdio>
+#include <iostream>
 #include "ColaPedidos.h"
+
+using namespace std;
 
 struct Nodo {
 	int tam;
@@ -63,21 +65,14 @@ bool par(int i){
   return not impar(i);
 }
 
-void swapNodo(Nodo*& n1, Nodo*& n2){
-  Nodo* tmp = n1;
-  n1 = n2;
-  n2 = tmp;
-}
-
-Nodo* insBraun(Nodo* nodo, Pedido p, int tam){
+Nodo* insBraun(Nodo* nodo, Pedido p){
   if (nodo == NULL){
     return nuevoNodo(p);
   } else {
-    Pedido menor = menorPrioridad(p, nodo->pedido);
-    nodo->pedido = mayorPrioridad(p, nodo->pedido);
-    nodo->der = insBraun(nodo->der, menor, (tam-1)/2);
-    if (impar(tam)){
-      swapNodo(nodo->izq, nodo->der);
+    if(masPrioridad(p, nodo->pedido)) swap(p, nodo->pedido);
+    nodo->der = insBraun(nodo->der, p);
+    if (impar(nodo->tam)){
+      swap(nodo->izq, nodo->der);
     }
     nodo->tam++;
     return nodo;
@@ -85,9 +80,7 @@ Nodo* insBraun(Nodo* nodo, Pedido p, int tam){
 }
 
 void encolarCP(ColaPedidos cp, Pedido p) {
-    cp->raiz = insBraun(cp->raiz, p, 
-	// encolar no tiene prec
-	cp->raiz==NULL?0:cp->raiz->tam); 
+    cp->raiz = insBraun(cp->raiz, p);
 }
 
 // prec: tamCP(cp) > 0
@@ -95,16 +88,18 @@ Pedido proximoCP(ColaPedidos cp) {
   return cp->raiz->pedido;
 }
 
-Nodo* eliminar(Nodo* nodo, Pedido& pedidoEliminado, int tam){
-  if (tam == 1){
+// prec: nodo no es NULL
+Nodo* eliBraun(Nodo* nodo, Pedido& pedidoEliminado){
+  if (nodo->tam == 1){
     pedidoEliminado = nodo->pedido;
     delete nodo;
     return NULL;
   } else {
-    nodo->izq = eliminar(nodo->izq, pedidoEliminado, tam/2);
-    if (impar(tam)) {
-      swapNodo(nodo->der, nodo->izq);
+    nodo->izq = eliBraun(nodo->izq, pedidoEliminado);
+    if (impar(nodo->tam)) {
+      swap(nodo->der, nodo->izq);
     }
+    nodo->tam--;
     return nodo;
   }
 }
@@ -123,31 +118,28 @@ Nodo* hijoMayor(Nodo* nodo){
   }
 }
 
-void intercambiarConHijoMayor(Nodo* nodo){
+Nodo* intercambiarConHijoMayor(Nodo* nodo){
   Nodo* mayor = hijoMayor(nodo);
   Pedido temp = mayor->pedido;
   mayor->pedido = nodo->pedido;
   nodo->pedido = temp;
+  return mayor;
 }
 
 void bajar(Nodo* nodo){
   Nodo* padre = nodo;
   while (tieneHijoMayor(padre)){
-    intercambiarConHijoMayor(padre);
-    padre = hijoMayor(padre);
+    padre = intercambiarConHijoMayor(padre);
   }
 }
 
 // prec: tamCP(cp) > 0
 void desencolarCP(ColaPedidos cp) {
   Pedido pedidoEliminado;
-  cp->raiz = eliminar(cp->raiz, pedidoEliminado, cp->raiz->tam);
+  cp->raiz = eliBraun(cp->raiz, pedidoEliminado);
   if (cp->raiz != NULL){
-    cp->raiz->tam--;
-    if (cp->raiz->tam > 0) {
       cp->raiz->pedido = pedidoEliminado;
       bajar(cp->raiz);
-    }
   }
 }
 
