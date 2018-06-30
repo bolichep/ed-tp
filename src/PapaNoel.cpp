@@ -1,4 +1,3 @@
-//#include <cstdio>
 #include <iostream>
 
 #include "ColaPedidos.h"
@@ -38,7 +37,6 @@ void registrarPedidoPN(PapaNoel p, Fecha f, Id x) {
   encolarCP(p->pedidosFuturos, pedido); // O(log n)
 }
 
-// TODO check medio.... etc
 // O(log n) ?
 Estado estadoPedidoId(Pedido* pedidos, int desde, int hasta, Id x){
   if (hasta < desde || pedidos == NULL)
@@ -58,31 +56,31 @@ Estado estadoPedidoPN(PapaNoel p, Id x) {
   estadoPedidoId(p->pedidosDeHoy, 0, p->cantPedidosDeHoy, x);
 }
 
+// prec: estado de Id es Pendiente 
+void cambiarEstadoPedidoId(Pedido*& pedidos, int desde, int hasta, Estado nuevoEstado, Id id){
+  int medio = desde + (hasta - desde) / 2;
+  if (pedidos[medio].persona > id)
+    return cambiarEstadoPedidoId(pedidos, desde, medio-1, nuevoEstado, id);
+  else if (pedidos[medio].persona < id)
+    return cambiarEstadoPedidoId(pedidos, medio+1, hasta, nuevoEstado, id);
+  else
+    pedidos[medio].estado = nuevoEstado;
+    return;
+}
 
+// O(log H)
 void entregarPedidoPN(PapaNoel p, Id x) {
-  //COMPLETAR
+  cambiarEstadoPedidoId(p->pedidosDeHoy, 0, p->cantPedidosDeHoy, Entregado, x);
 }
 
 void registrarMalComportamientoPN(PapaNoel p, Id x) {
-	// COMPLETAR
+  cambiarEstadoPedidoId(p->pedidosDeHoy, 0, p->cantPedidosDeHoy, MalComportamiento, x);
 }
 
-#define pp \
-    std::cout << "$ " << " fechas " << primero.fechaEntrega << " " << p->fechaDeHoy<< std::endl;\
-    std::cout << "capacidad " << capacidadArray << std::endl;\
-    std::cout << "array " << array << std::endl;\
-    std::cout << "i " << i ;\
-    std::cout << "p->cantPedidosDeHoy" << p->cantPedidosDeHoy  << std::endl;\
-    std::cout << "tamCP(p->pedidosFuturos) = " << tamCP(p->pedidosFuturos) << std::endl;\
-    std::cout << "array--persona " << array[0].persona << std::endl;\
-    std::cout << "array--persona " << array[1].persona << std::endl;\
-    std::cout << "array--persona " << array[2].persona << std::endl;\
-    std::cout << "array--persona " << array[3].persona << std::endl;\
-    std::cout << "array--persona " << array[4].persona << std::endl;\
-    std::cout << "array--persona " << array[5].persona << std::endl;\
-    std::cout << "array--persona " << array[6].persona << std::endl;\
-    std::cout << "array--persona " << array[7].persona << std::endl;
 
+// 
+// prop: duplica la cantidad de memoria reservada para array 
+// y copia el contenido en esta memoria recien alocada 
 void duplicarTamArreglo(Pedido*& array, int& capacidadArray){
   Pedido* nuevo = new Pedido[2 * capacidadArray];
   for (int i = 0; i < capacidadArray ; i++)
