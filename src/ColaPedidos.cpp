@@ -17,7 +17,7 @@ struct ColaPedidosRepr {
 ColaPedidos nuevaCP() {
   ColaPedidos cp;
   cp = new ColaPedidosRepr;
-  cp->raiz = NULL; // mmmmmmm
+  cp->raiz = NULL; 
   return cp;
 }
 
@@ -32,21 +32,6 @@ bool masPrioridad(Pedido p1, Pedido p2){
     (p1.fechaEntrega == p2.fechaEntrega && p1.persona < p2.persona);
 }
 
-Pedido menorPrioridad(Pedido p1, Pedido p2){
-  Pedido menorP = p2;
-  if (not masPrioridad(p1, p2)){
-    menorP = p1;
-  }
-  return menorP;
-}
-
-Pedido mayorPrioridad(Pedido p1, Pedido p2){
-  Pedido mayorP = p2;
-  if (masPrioridad(p1, p2)){
-    mayorP = p1;
-  }
-  return mayorP;
-}
 
 Nodo* nuevoNodo(Pedido p){
   Nodo* n = new Nodo;
